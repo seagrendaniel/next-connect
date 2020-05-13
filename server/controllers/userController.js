@@ -25,7 +25,7 @@ exports.getUserById = async (req, res, next, id) => {
 
   const profileId = mongoose.Types.ObjectId(req.profile._id);
 
-  if (profileId.equals(req.user_id)) {        // req.user._id == currently authenticated user
+  if (req.user && profileId.equals(req.user_id)) {        // if there is a user on the request body & req.user._id == currently authenticated user
     req.isAuthUser = true;
     return next();
   }
