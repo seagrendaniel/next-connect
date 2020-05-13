@@ -6,7 +6,7 @@ const Post = mongoose.model('Post');
 const imageUploadOptions = {
   storage: multer.memoryStorage(),
   limits: {
-    // storing files up to 1MB
+    // storing files up to 1mb
     fileSize: 1024 * 1024 * 1 
   },
   fileFilter: (req, file, next) => {
@@ -42,9 +42,30 @@ exports.addPost = async (req, res) => {
   res.json(post);
 };
 
-exports.deletePost = () => {};
 
-exports.getPostById = () => {};
+exports.getPostById = async (req, res, next, id) => {
+  const post = await Post.findOne({_id: id});
+  req.post = post;
+  
+  const posterId = mongoose.Types.ObjectId(res.post.postedBy._id);
+  if(req.user && posterId.equals(req.user._id)) {
+    req.isPoster = true;
+    return next();
+  }
+  next();
+};
+
+exports.deletePost = async (req, res) => {
+  const {_id} = req.post;
+
+  if(!req.isPoster) {
+    return res.status(400).json({
+      message: "You are not authorized to perform this action"
+    });
+  }
+  const deletedPost = await Post.findOneAndDelete({_id});
+  res.json(deletedPost);
+};
 
 exports.getPostsByUser = async (req, res) => {
   const posts = await Post.find({postedBy: req.profile._id}).sort({
