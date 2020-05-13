@@ -33,7 +33,7 @@ exports.signup = async (req, res) => {
     if(err) {
       return res.status(500).send(err.message);
     }
-    res.json(user);
+    res.json(user.name);
   })
 };
 
@@ -62,4 +62,9 @@ exports.signout = (req, res) => {
   res.json({message: "You are now signed out!"});
 };
 
-exports.checkAuth = () => {};
+exports.checkAuth = (req, res, next) => { // runs as middleware to protect certain routes
+  if(req.isAuthenticated) {
+    return next();
+  }
+  res.redirect('/signin');
+};
