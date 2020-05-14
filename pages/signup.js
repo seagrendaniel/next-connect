@@ -15,8 +15,13 @@ import Slide from "@material-ui/core/Slide";
 import Gavel from "@material-ui/icons/Gavel";
 import VerifiedUserTwoTone from "@material-ui/icons/VerifiedUserTwoTone";
 import withStyles from "@material-ui/core/styles/withStyles";
+import Link from 'next/link';
 
 import { signupUser } from '../lib/auth';
+
+function Transition(props) {
+  return <Slide direction="up" {...props} />
+}
 
 class Signup extends React.Component {
   state = {
@@ -24,13 +29,15 @@ class Signup extends React.Component {
     email: '',
     password: '',
     error: '',
+    createdUser: '',
     openError: false,
-    createdUser: ''
+    openSuccess: false,
+    isLoading: false
   };
 
   showError = err => {
-    const error = err.response && err.response.data || err.message;
-    this.setState({ error, openError: true })
+    const error = (err.response && err.response.data) || err.message;
+    this.setState({ error, openError: true, isLoading: false })
   }
 
   handleClose = () => this.setState({ openError: false })
@@ -42,20 +49,23 @@ class Signup extends React.Component {
   handleSubmit = event => {
     const { name, email, password } = this.state;
     event.preventDefault();
-
+    this.setState({ isLoading: true, error: '' })
     const user = { name, email, password };
     signupUser(user)
       .then(createdUser => {
         this.setState({
           createdUser,
-          error: ''
-        })
-      }).catch(this.showError)
-  }
+          error: '',
+          openSuccess: true,
+          isLoading: false
+        });
+      })
+      .catch(this.showError)
+  };
 
   render() {
     const { classes } = this.props;
-    const { error, openError } = this.state;
+    const { error, openError, openSuccess, createdUser, isLoading } = this.state;
 
     return (
       <div className={classes.root}>
@@ -91,7 +101,9 @@ class Signup extends React.Component {
                 onChange={this.handleChange}
               />
             </FormControl>
-            <Button type="submit" fullWidth variant="contained" color="primary" className={classes.submit}>Sign Up</Button>
+            <Button type="submit" fullWidth variant="contained" color="primary" className={classes.submit} disabled={isLoading}>
+              {isLoading ? "Signing up..." : "Sign up"}
+            </Button>
           </form>
           {/* Error Snackbar */}
           {error && <Snackbar
@@ -105,6 +117,30 @@ class Signup extends React.Component {
             message={<span className={classes.snack}>{error}</span>}
           />}
         </Paper>
+
+        {/* Success Dialog */}
+        <Dialog
+          open={openSuccess}
+          disableBackdropClick={true}
+          TransitionComponent={Transition}
+        >
+          <DialogTitle>
+            <VerifiedUserTwoTone className={classes.icon} />
+            New Account
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              User {createdUser} successfully created!
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" variant="contained">
+              <Link href="/signin">
+                <a className={classes.signinLink}>Sign In</a>
+              </Link>
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     )
   }
