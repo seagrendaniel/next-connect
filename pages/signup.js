@@ -16,30 +16,48 @@ import Gavel from "@material-ui/icons/Gavel";
 import VerifiedUserTwoTone from "@material-ui/icons/VerifiedUserTwoTone";
 import withStyles from "@material-ui/core/styles/withStyles";
 
-import {signupUser} from '../lib/auth';
+import { signupUser } from '../lib/auth';
 
 class Signup extends React.Component {
   state = {
     name: '',
     email: '',
-    password: ''
+    password: '',
+    error: '',
+    openError: false,
+    createdUser: ''
   };
 
+  showError = err => {
+    const error = err.response && err.response.data || err.message;
+    this.setState({ error, openError: true })
+  }
+
+  handleClose = () => this.setState({ openError: false })
+
   handleChange = event => {
-    this.setState({[event.target.name]: event.target.value})
+    this.setState({ [event.target.name]: event.target.value })
   }
 
   handleSubmit = event => {
-    const {name, email, password} = this.state;
+    const { name, email, password } = this.state;
     event.preventDefault();
 
-    const user = {name, email, password};
-    signupUser(user);
+    const user = { name, email, password };
+    signupUser(user)
+      .then(createdUser => {
+        this.setState({
+          createdUser,
+          error: ''
+        })
+      }).catch(this.showError)
   }
 
   render() {
-    const {classes} = this.props;
-    return(
+    const { classes } = this.props;
+    const { error, openError } = this.state;
+
+    return (
       <div className={classes.root}>
         <Paper className={classes.paper}>
           <Avatar className={classes.avatar}>
@@ -51,7 +69,7 @@ class Signup extends React.Component {
           <form className={classes.form} onSubmit={this.handleSubmit}>
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="name">Name</InputLabel>
-              <Input 
+              <Input
                 name="name"
                 type="text"
                 onChange={this.handleChange}
@@ -59,7 +77,7 @@ class Signup extends React.Component {
             </FormControl>
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="email">Email</InputLabel>
-              <Input 
+              <Input
                 name="email"
                 type="email"
                 onChange={this.handleChange}
@@ -67,7 +85,7 @@ class Signup extends React.Component {
             </FormControl>
             <FormControl margin="normal" required fullWidth>
               <InputLabel htmlFor="password">Password</InputLabel>
-              <Input 
+              <Input
                 name="password"
                 type="password"
                 onChange={this.handleChange}
@@ -75,6 +93,17 @@ class Signup extends React.Component {
             </FormControl>
             <Button type="submit" fullWidth variant="contained" color="primary" className={classes.submit}>Sign Up</Button>
           </form>
+          {/* Error Snackbar */}
+          {error && <Snackbar
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right'
+            }}
+            open={openError}
+            onClose={this.handleClose}
+            autoHideDuration={6000}
+            message={<span className={classes.snack}>{error}</span>}
+          />}
         </Paper>
       </div>
     )
