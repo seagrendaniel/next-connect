@@ -18,7 +18,7 @@ exports.validateSignup = (req, res, next) => {
   req.checkBody('password', 'Enter a password').notEmpty();
   req.checkBody('password', 'Password must between 4 - 10 characters').isLength({min: 4, max: 10});
 
-  const errors = req.validationErrors();
+  const errors = req.validationErrors(); // puts all errors into an array
   if(errors){
     const firstError = errors.map(error => error.msg)[0];
     return res.status(400).send(firstError);
@@ -63,7 +63,7 @@ exports.signout = (req, res) => {
 };
 
 exports.checkAuth = (req, res, next) => { // runs as middleware to protect certain routes
-  if(req.isAuthenticated) {
+  if(req.isAuthenticated()) {
     return next();
   }
   res.redirect('/signin');

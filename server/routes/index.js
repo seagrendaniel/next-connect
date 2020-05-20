@@ -51,6 +51,7 @@ router
     catchErrors(userController.updateUser)
   )
   .delete(authController.checkAuth, catchErrors(userController.deleteUser));
+  // .delete(catchErrors(userController.deleteUser));
 
 router.get("/api/users", userController.getUsers);
 router.get(

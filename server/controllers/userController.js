@@ -22,10 +22,9 @@ exports.getAuthUser = (req, res) => {
 exports.getUserById = async (req, res, next, id) => {
   const user = await User.findOne({ _id: id });
   req.profile = user;
-
   const profileId = mongoose.Types.ObjectId(req.profile._id);
 
-  if (req.user && profileId.equals(req.user_id)) {        // if there is a user on the request body & req.user._id == currently authenticated user
+  if (req.user && profileId.equals(req.user._id)) { // if there is a user on the request body & req.user._id == currently authenticated user
     req.isAuthUser = true;
     return next();
   }
@@ -91,7 +90,7 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   const { userId } = req.params;
   if (!req.isAuthUser) {
-    return res.status(400).json({ message: "You are not authorized to perform this action" });
+    return res.status(400).json({ message: "You are not authorized to perform this action" })
   }
   const deletedUser = await User.findOneAndDelete({ _id: userId });
   res.json(deletedUser);
